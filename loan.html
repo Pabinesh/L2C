@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Loan Chatbot</title>
+    <style>
+        :root {
+            --background-dark: #1E1E1E;
+            --card-dark: #2D2D2D;
+            --accent-color: #FFC107;
+            --text-color: #FFFFFF;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+            --neutral-color: #2196F3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            background-color: var(--card-dark);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .chatbot-header {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: var(--card-dark);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chatbot-header .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+
+        .chatbot-header .avatar i {
+            color: black;
+        }
+
+        .loan-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .loan-type-card {
+            background-color: var(--background-dark);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .loan-type-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+        }
+
+        .loan-type-card i {
+            color: var(--accent-color);
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            max-width: 80%;
+            clear: both;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            float: right;
+            text-align: right;
+        }
+
+        .message.bot {
+            float: left;
+            text-align: left;
+        }
+
+        .message-content {
+            background-color: var(--accent-color);
+            color: black;
+            padding: 10px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            word-break: break-word;
+        }
+
+        .message.bot .message-content {
+            background-color: var(--background-dark);
+            color: white;
+            border-left: 3px solid var(--accent-color);
+            border-radius: 0 20px 20px 20px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--background-dark);
+            padding: 10px 16px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.3s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 16px;
+            background-color: var(--card-dark);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-input input {
+            flex-grow: 1;
+            padding: 12px 16px;
+            background-color: #121212;
+            border: none;
+            border-radius: 24px;
+            color: white;
+            margin-right: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+
+        .chat-input button {
+            background-color: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input button:hover {
+            transform: scale(1.05);
+            background-color: #FFD54F;
+        }
+
+        .chat-input button:active {
+            transform: scale(0.95);
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 16px;
+        }
+
+        .suggestion-chip {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .suggestion-chip:hover {
+            background-color: rgba(255, 193, 7, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .info-card {
+            background-color: rgba(33, 150, 243, 0.1);
+            border-left: 3px solid var(--neutral-color);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .success-card {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid var(--success-color);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .error-card {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 3px solid var(--error-color);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 8px;
+        }
+
+        .document-list {
+            list-style-type: none;
+            padding-left: 5px;
+        }
+
+        .document-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 5px;
+        }
+
+        .document-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .loan-calculator {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .calculator-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--accent-color);
+        }
+
+        .calculator-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .loan-result {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .result-highlight {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Themes */
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        body.light-theme {
+            --background-dark: #f5f5f5;
+            --card-dark: #ffffff;
+            --text-color: #333333;
+        }
+
+        body.light-theme .message.bot .message-content {
+            background-color: #e9e9e9;
+            color: #333333;
+        }
+
+        body.light-theme .chat-input input {
+            background-color: #f0f0f0;
+            color: #333333;
+        }
+
+        @media (max-width: 480px) {
+            .loan-types {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <button class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <div class="avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div>
+                <h2>L2C</h2>
+                <p id="status">Online</p>
+            </div>
+        </div>
+
+        <div id="loan-types" class="loan-types">
+            <div class="loan-type-card" data-type="Personal Loan">
+                <i class="fas fa-user"></i>
+                <h3>Personal Loan</h3>
+            </div>
+            <div class="loan-type-card" data-type="Education Loan">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>Education Loan</h3>
+            </div>
+            <div class="loan-type-card" data-type=" Farming Loan">
+                <i class="fas fa-briefcase"></i>
+                <h3> Farming Loan</h3>
+            </div>
+            <div class="loan-type-card" data-type="Gold Loan">
+                <i class="fas fa-coins"></i>
+                <h3>Gold Loan</h3>
+            </div>
+            <div class="loan-type-card" data-type="Home Loan">
+                <i class="fas fa-home"></i>
+                <h3>Home Loan</h3>
+            </div>
+            <div class="loan-type-card" data-type="Vehicle Loan">
+                <i class="fas fa-car"></i>
+                <h3>Vehicle Loan</h3>
+            </div>
+        </div>
+
+        <div id="chat-messages" class="chat-messages"></div>
+
+        <div id="suggestion-chips" class="suggestion-chips"></div>
+
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button id="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Synthetic Data with more complete information
+        const loanData = {
+            "Personal Loan": {
+                "Eligibility": {
+                    "Age": "21-60 years",
+                    "Nationality": "Indian",
+                    "Monthly Income": "₹25,000 or above",
+                    "Employment": "Salaried or Self-employed",
+                    "Credit Score": "650 or above"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Passport size photograph",
+                    "Last 6 months' bank statements",
+                    "Last 3 months' salary slips (for salaried)",
+                    "Latest ITR (for self-employed)",
+                    "Employment proof"
+                ],
+                "Process": [
+                    "Fill online application form",
+                    "Submit required documents",
+                    "Verification by bank",
+                    "Loan approval",
+                    "Loan disbursement"
+                ],
+                "Schemes": [
+                    { "name": "Standard Personal Loan", "interest": "10.5% - 14%", "tenure": "1-5 years", "max_amount": "₹20 Lakhs" },
+                    { "name": "Special Salary Account Offer", "interest": "9.5% - 12%", "tenure": "1-5 years", "max_amount": "₹25 Lakhs" },
+                    { "name": "Pre-Approved Personal Loan", "interest": "9.9% - 11.5%", "tenure": "1-5 years", "max_amount": "₹15 Lakhs" }
+                ],
+                "Benefits": [
+                    "No collateral required",
+                    "Quick approval and disbursal",
+                    "Flexible repayment options",
+                    "Minimal documentation"
+                ],
+                "FAQs": [
+                    { "question": "What is the processing fee?", "answer": "1-2% of loan amount or ₹1,000-₹5,000, whichever is higher" },
+                    { "question": "Is foreclosure allowed?", "answer": "Yes, after 6 months with a nominal foreclosure fee of 2-5%" },
+                    { "question": "What is the EMI per lakh?", "answer": "Approximately ₹2,225 per lakh for 5 years at 12% interest rate" }
+                ]
+            },
+            "Education Loan": {
+                "Eligibility": {
+                    "Age": "16-35 years",
+                    "Nationality": "Indian",
+                    "Guardian Income": "₹20,000 or above monthly (for loans up to ₹5 Lakhs)",
+                    "Academic": "Admission in recognized institution",
+                    "Course": "Professional, technical, or other career-oriented courses"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Passport size photograph",
+                    "Parent/Guardian income proof",
+                    "Academic records/mark sheets",
+                    "Admission letter from institute",
+                    "Fee structure from institute",
+                    "Co-borrower documents (usually parent/guardian)"
+                ],
+                "Process": [
+                    "Submit admission proof",
+                    "Provide academic records",
+                    "Submit parent/guardian documents",
+                    "College fee structure verification",
+                    "Loan approval",
+                    "Direct disbursement to institution"
+                ],
+                "Schemes": [
+                    { "name": "Domestic Education Loan", "interest": "8.5% - 10.5%", "tenure": "5-15 years", "max_amount": "₹75 Lakhs" },
+                    { "name": "International Education Loan", "interest": "9.5% - 12.5%", "tenure": "5-15 years", "max_amount": "₹1.5 Crores" },
+                    { "name": "Vocational Education Loan", "interest": "9% - 11%", "tenure": "3-7 years", "max_amount": "₹20 Lakhs" }
+                ],
+                "Benefits": [
+                    "Moratorium period during study period plus 6-12 months",
+                    "Tax benefits under Section 80E",
+                    "Covers tuition fees, hostel fees, books, and equipment",
+                    "No collateral for loans up to ₹7.5 Lakhs"
+                ],
+                "FAQs": [
+                    { "question": "Is there a processing fee?", "answer": "Usually nil to 1% of the loan amount" },
+                    { "question": "When do I start repaying?", "answer": "After course completion plus 6-12 months (moratorium period)" },
+                    { "question": "Can I get a loan for studying abroad?", "answer": "Yes, with potentially higher loan amounts and different terms" }
+                ]
+            },
+            " Farming Loan": {
+                "Eligibility": {
+                    "Age": "21-65 years",
+                    "Nationality": "Indian",
+                    "Business Existence": "Minimum 2-3 years in business",
+                    "Annual Turnover": "₹10 Lakhs or above",
+
+                    "Credit Score": "700 or above"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Business registration proof",
+                    "Last 2 years ITR with computation",
+                    "Last 6 months business bank statement",
+                    "GST returns (if applicable)",
+                    "Ownership proof of business premises"
+                ],
+                "Process": [
+                    "Apply online or at branch",
+                    "Submit business documentation",
+                    "Business verification",
+                    "Financial assessment",
+                    "Loan approval and disbursement"
+                ],
+                "Schemes": [
+                    { "name": "Kisan Credit Card (KCC) Scheme", "interest": "11% - 16%", "tenure": "1-5 years", "max_amount": "₹50 Lakhs" },
+                    { "name": "Agriculture Infrastructure Fund", "interest": "10.5% - 14%", "tenure": "1-3 years", "max_amount": "₹2 Crores" },
+                    { "name": "Pradhan Mantri Kisan Samman Nidhi ", "interest": "14% - 18%", "tenure": "1-5 years", "max_amount": "₹1 Crore" }
+                ],
+                "Benefits": [
+                    "Minimal documentation for existing customers",
+                    "Flexible repayment options",
+                    "No collateral required for certain loan amounts",
+                    "Special rates for women entrepreneurs"
+                ],
+                "FAQs": [
+                    { "question": "What is the processing fee?", "answer": "1-3% of the loan amount" },
+                    { "question": "How long does approval take?", "answer": "3-7 business days for most applications" },
+                    { "question": "Can I use it for any business purpose?", "answer": "Yes, including expansion, equipment purchase, working capital, etc." }
+                ]
+            },
+            "Gold Loan": {
+                "Eligibility": {
+                    "Age": "18-70 years",
+                    "Nationality": "Indian",
+                    "Gold Purity": "18-24 carat gold jewelry",
+                    "Documentation": "Minimal documentation required"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Passport size photograph",
+                    "Address proof",
+                    "Gold jewelry items"
+                ],
+                "Process": [
+                    "Visit the branch with gold and documents",
+                    "Gold purity assessment and valuation",
+                    "Loan amount finalization (up to 75% of gold value)",
+                    "Documentation completion",
+                    "Loan disbursement"
+                ],
+                "Schemes": [
+                    { "name": "Standard Gold Loan", "interest": "7.5% - 12%", "tenure": "3 months - 3 years", "max_amount": "Based on gold value" },
+                    { "name": "Bullet Repayment Scheme", "interest": "8.5% - 13%", "tenure": "3-12 months", "max_amount": "Based on gold value" },
+                    { "name": "Overdraft Gold Loan", "interest": "9.5% - 14%", "tenure": "1-3 years", "max_amount": "Based on gold value" }
+                ],
+                "Benefits": [
+                    "Lowest interest rates among unsecured loans",
+                    "Quick disbursement (often within hours)",
+                    "No credit score check",
+                    "Minimal documentation"
+                ],
+                "FAQs": [
+                    { "question": "How is my gold stored?", "answer": "In secure bank vaults with insurance coverage" },
+                    { "question": "What gold items are accepted?", "answer": "Gold jewelry, coins (in some cases), and gold ornaments" },
+                    { "question": "What is the maximum loan-to-value ratio?", "answer": "Up to 75% of the gold's market value" }
+                ]
+            },
+            "Home Loan": {
+                "Eligibility": {
+                    "Age": "21-65 years",
+                    "Nationality": "Indian",
+                    "Monthly Income": "₹25,000 or above",
+                    "Employment": "Salaried or Self-employed with 2+ years experience",
+                    "Credit Score": "700 or above"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Income proof (salary slips/ITR)",
+                    "Last 6 months bank statements",
+                    "Property documents",
+                    "NOC from builder/society",
+                    "Approved building plan"
+                ],
+                "Process": [
+                    "Apply online or at branch",
+                    "Submit income and property documents",
+                    "Property verification and legal checks",
+                    "Technical property valuation",
+                    "Loan approval and offer letter",
+                    "Property registration and mortgage",
+                    "Loan disbursement"
+                ],
+                "Schemes": [
+                    { "name": "Standard Home Loan", "interest": "6.5% - 9%", "tenure": "5-30 years", "max_amount": "₹10 Crores" },
+                    { "name": "Home Construction Loan", "interest": "7% - 9.5%", "tenure": "5-30 years", "max_amount": "₹5 Crores" },
+                    { "name": "Home Renovation Loan", "interest": "7.5% - 10%", "tenure": "5-15 years", "max_amount": "₹1 Crore" }
+                ],
+                "Benefits": [
+                    "Tax benefits under Section 80C (principal) and 24(b) (interest)",
+                    "Lower interest rates compared to other loans",
+                    "Long tenure options up to 30 years",
+                    "Part payment and foreclosure options"
+                ],
+                "FAQs": [
+                    { "question": "What is the processing fee?", "answer": "0.5-1% of the loan amount or ₹10,000-₹25,000" },
+                    { "question": "Can I get a loan for under-construction property?", "answer": "Yes, with disbursement linked to construction stages" },
+                    { "question": "Is pre-payment allowed?", "answer": "Yes, usually without penalties for floating rate loans" }
+                ]
+            },
+            "Vehicle Loan": {
+                "Eligibility": {
+                    "Age": "21-65 years",
+                    "Nationality": "Indian",
+                    "Monthly Income": "₹20,000 or above",
+                    "Employment": "Salaried or Self-employed with stable income",
+                    "Credit Score": "650 or above"
+                },
+                "Documents Required": [
+                    "Aadhar Card",
+                    "PAN Card",
+                    "Income proof (salary slips/ITR)",
+                    "Last 3 months bank statements",
+                    "Vehicle quotation from dealer",
+                    "Driving license",
+                    "Form 20 (sale certificate from dealer)"
+                ],
+                "Process": [
+                    "Apply online or at branch",
+                    "Submit required documents",
+                    "Application processing and verification",
+                    "Loan approval",
+                    "Disbursal to dealer",
+                    "Vehicle registration with hypothecation"
+                ],
+                "Schemes": [
+                    { "name": "New Car Loan", "interest": "7% - 9.5%", "tenure": "1-7 years", "max_amount": "Up to 100% of on-road price" },
+                    { "name": "Used Car Loan", "interest": "9% - 13%", "tenure": "1-5 years", "max_amount": "Up to 80% of valuation" },
+                    { "name": "Two-Wheeler Loan", "interest": "8% - 12%", "tenure": "1-5 years", "max_amount": "Up to 95% of on-road price" }
+                ],
+                "Benefits": [
+                    "Competitive interest rates",
+                    "Quick approval and disbursement",
+                    "Flexible repayment options",
+                    "Option to include insurance cost in loan amount"
+                ],
+                "FAQs": [
+                    { "question": "What is the processing fee?", "answer": "0.5-1% of the loan amount or ₹1,000-₹5,000" },
+                    { "question": "Is foreclosure allowed?", "answer": "Yes, generally with 2-5% foreclosure charges" },
+                    { "question": "Can I transfer my existing vehicle loan?", "answer": "Yes, through a balance transfer with potentially better rates" }
+                ]
+            }
+        };
+
+        let selectedLoanType = null;
+        let currentStep = 0;
+        let userInfo = {};
+        let calculatedEMI = null;
+        let isEligible = false;
+
+        const loanTypesContainer = document.getElementById('loan-types');
+        const chatMessagesContainer = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const suggestionChips = document.getElementById('suggestion-chips');
+        const themeToggle = document.getElementById('theme-toggle');
+        const statusElement = document.getElementById('status');
+
+        // Initialize the chatbot
+        window.addEventListener('DOMContentLoaded', () => {
+            addMessage("👋 Hello! I'm your loan assistant. I can help you with loan information, eligibility checks, and EMI calculations. Please select a loan type or ask me any questions about loans.", false);
+
+            // Add welcome suggestions
+            showSuggestions([
+                "Tell me about Personal Loans",
+                "What documents do I need?",
+                "Calculate EMI",
+                "Compare loan types"
+            ]);
+        });
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            if (document.body.classList.contains('light-theme')) {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        });
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('message', 'bot', 'typing-indicator-container');
+            typingDiv.innerHTML = `
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            chatMessagesContainer.appendChild(typingDiv);
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+            return typingDiv;
+        }
+
+        function removeTypingIndicator(element) {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }
+
+        function showSuggestions(suggestions) {
+            suggestionChips.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const chip = document.createElement('div');
+                chip.classList.add('suggestion-chip');
+                chip.textContent = suggestion;
+                chip.addEventListener('click', () => {
+                    messageInput.value = suggestion;
+                    handleUserInput();
+                });
+                suggestionChips.appendChild(chip);
+            });
+        }
+
+        function addMessage(text, isUser = false, isHTML = false) {
+            // Update online status for chatbot responses
+            if (!isUser) {
+                statusElement.textContent = "Online";
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user' : 'bot');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+
+            if (isHTML) {
+                contentDiv.innerHTML = text;
+            } else {
+                contentDiv.textContent = text;
+            }
+
+            messageDiv.appendChild(contentDiv);
+
+            // Add timestamp
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('message-time');
+            timeDiv.textContent = getCurrentTime();
+            messageDiv.appendChild(timeDiv);
+
+            chatMessagesContainer.appendChild(messageDiv);
+
+            // Add clearfix after each message
+            const clearfix = document.createElement('div');
+            clearfix.classList.add('clearfix');
+            chatMessagesContainer.appendChild(clearfix);
+
+            chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+            return messageDiv;
+        }
+
+        function addFormattedMessage(title, content, type = 'info') {
+            let icon = '';
+            let className = '';
+
+            switch (type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    className = 'success-card';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    className = 'error-card';
+                    break;
+                default:
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    className = 'info-card';
+            }
+
+            const html = `
+                <div class="${className}">
+                    <div class="card-title">${icon} ${title}</div>
+                    <div class="card-content">${content}</div>
+                </div>
+            `;
+
+            addMessage(html, false, true);
+        }
+
+        function addDocumentsList(documents) {
+            let listItems = '';
+            documents.forEach(doc => {
+                listItems += `<li>${doc}</li>`;
+            });
+
+            const html = `
+                <div class="info-card">
+                    <div class="card-title"><i class="fas fa-file-alt"></i> Required Documents</div>
+                    <ul class="document-list">
+                        ${listItems}
+                    </ul>
+                </div>
+            `;
+
+            addMessage(html, false, true);
+        }
+
+        function addLoanSchemes(schemes) {
+            let schemesHtml = '';
+            schemes.forEach(scheme => {
+                schemesHtml += `
+                    <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div style="font-weight: bold; color: var(--accent-color);">${scheme.name}</div>
+                        <div>Interest Rate: ${scheme.interest}</div>
+                        <div>Tenure: ${scheme.tenure}</div>
+                        <div>Maximum Amount: ${scheme.max_amount}</div>
+                    </div>
+                `;
+            });
+
+            const html = `
+                <div class="info-card">
+                    <div class="card-title"><i class="fas fa-percentage"></i> Available Loan Schemes</div>
+                    <div class="card-content">
+                        ${schemesHtml}
+                    </div>
+                </div>
+            `;
+
+            addMessage(html, false, true);
+        }
+
+        function addLoanCalculator(loan_amount, interest_rate, tenure) {
+            const monthlyRate = interest_rate / 1200; // Convert annual percentage to monthly decimal
+            const months = tenure * 12;
+            const emi = loan_amount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+            const totalAmount = emi * months;
+            const totalInterest = totalAmount - loan_amount;
+
+            calculatedEMI = {
+                emi: emi.toFixed(2),
+                totalAmount: totalAmount.toFixed(2),
+                totalInterest: totalInterest.toFixed(2),
+                months: months
+            };
+
+            const html = `
+                <div class="loan-calculator">
+                    <div class="calculator-title">EMI Calculation</div>
+                    <div class="calculator-row">
+                        <div>Loan Amount:</div>
+                        <div>₹${loan_amount.toLocaleString()}</div>
+                    </div>
+                    <div class="calculator-row">
+                        <div>Interest Rate:</div>
+                        <div>${interest_rate}% per annum</div>
+                    </div>
+                    <div class="calculator-row">
+                        <div>Tenure:</div>
+                        <div>${tenure} years (${months} months)</div>
+                    </div>
+                    <div class="loan-result">
+                        <div class="calculator-row">
+                            <div>Monthly EMI:</div>
+                            <div class="result-highlight">₹${emi.toFixed(2).toLocaleString()}</div>
+                        </div>
+                        <div class="calculator-row">
+                            <div>Total Interest:</div>
+                            <div>₹${totalInterest.toFixed(2).toLocaleString()}</div>
+                        </div>
+                        <div class="calculator-row">
+                            <div>Total Amount Payable:</div>
+                            <div>₹${totalAmount.toFixed(2).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            addMessage(html, false, true);
+
+            // Show repayment plan suggestion
+            showSuggestions([
+                "Show repayment schedule",
+                "Reduce EMI options",
+                "Try different amount"
+            ]);
+        }
+
+        function generateRepaymentSchedule(loan_amount, interest_rate, tenure) {
+            const monthlyRate = interest_rate / 1200;
+            const months = tenure * 12;
+            const emi = loan_amount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+
+            let remainingPrincipal = loan_amount;
+            let scheduleHtml = '';
+            let yearlyDetail = {};
+
+            for (let month = 1; month <= months; month++) {
+                const interestForMonth = remainingPrincipal * monthlyRate;
+                const principalForMonth = emi - interestForMonth;
+                remainingPrincipal -= principalForMonth;
+
+                const year = Math.ceil(month / 12);
+
+                if (!yearlyDetail[year]) {
+                    yearlyDetail[year] = {
+                        totalEMI: 0,
+                        totalPrincipal: 0,
+                        totalInterest: 0
+                    };
+                }
+
+                yearlyDetail[year].totalEMI += emi;
+                yearlyDetail[year].totalPrincipal += principalForMonth;
+                yearlyDetail[year].totalInterest += interestForMonth;
+            }
+
+            for (const year in yearlyDetail) {
+                scheduleHtml += `
+                    <div class="calculator-row" style="padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div>Year ${year}</div>
+                        <div>
+                            <div>Principal: ₹${yearlyDetail[year].totalPrincipal.toFixed(2).toLocaleString()}</div>
+                            <div>Interest: ₹${yearlyDetail[year].totalInterest.toFixed(2).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="loan-calculator">
+                    <div class="calculator-title">Yearly Repayment Schedule</div>
+                    ${scheduleHtml}
+                </div>
+            `;
+
+            addMessage(html, false, true);
+        }
+
+        function selectLoanType(type) {
+            selectedLoanType = type;
+            loanTypesContainer.style.display = 'none';
+
+            const typingIndicator = showTypingIndicator();
+
+            setTimeout(() => {
+                removeTypingIndicator(typingIndicator);
+                addMessage(`You've selected ${type}. Let me help you check your eligibility for a ${type}.`);
+
+                // Show loan information
+                const loanInfo = loanData[type];
+                addFormattedMessage(`About ${type}`, `Let me share some information about ${type} and how to qualify.`);
+
+                // Display eligibility criteria
+                let eligibilityList = '';
+                for (const [key, value] of Object.entries(loanInfo.Eligibility)) {
+                    eligibilityList += `<li><strong>${key}:</strong> ${value}</li>`;
+                }
+
+                const eligibilityHtml = `
+                    <div class="info-card">
+                        <div class="card-title"><i class="fas fa-check-circle"></i> Eligibility Criteria</div>
+                        <ul class="document-list">
+                            ${eligibilityList}
+                        </ul>
+                    </div>
+                `;
+
+                addMessage(eligibilityHtml, false, true);
+
+                // Show documents required
+                addDocumentsList(loanInfo["Documents Required"]);
+
+                // Ask for eligibility check
+                addMessage("Would you like to check your eligibility based on your profile?");
+
+                showSuggestions([
+                    "Yes, check eligibility",
+                    "Show loan schemes",
+                    "Calculate EMI",
+                    "How to apply?"
+                ]);
+
+                currentStep = 0;
+            }, 1500);
+        }
+
+        function startEligibilityCheck() {
+            currentStep = 1;
+            addMessage("To check your eligibility, I'll need some basic information. First, could you tell me your age?");
+        }
+
+        function showLoanSchemes() {
+            if (!selectedLoanType) {
+                addMessage("Please select a loan type first to see available schemes.");
+                return;
+            }
+
+            const loanInfo = loanData[selectedLoanType];
+            addLoanSchemes(loanInfo.Schemes);
+
+            // Add benefits
+            let benefitsList = '';
+            loanInfo.Benefits.forEach(benefit => {
+                benefitsList += `<li>${benefit}</li>`;
+            });
+
+            const benefitsHtml = `
+                <div class="info-card">
+                    <div class="card-title"><i class="fas fa-star"></i> Key Benefits</div>
+                    <ul class="document-list">
+                        ${benefitsList}
+                    </ul>
+                </div>
+            `;
+
+            addMessage(benefitsHtml, false, true);
+
+            showSuggestions([
+                "Calculate EMI",
+                "Check eligibility",
+                "Application process"
+            ]);
+        }
+
+        function showApplicationProcess() {
+            if (!selectedLoanType) {
+                addMessage("Please select a loan type first to see the application process.");
+                return;
+            }
+
+            const loanInfo = loanData[selectedLoanType];
+
+            let processList = '';
+            loanInfo.Process.forEach((step, index) => {
+                processList += `<li><strong>Step ${index + 1}:</strong> ${step}</li>`;
+            });
+
+            const processHtml = `
+                <div class="info-card">
+                    <div class="card-title"><i class="fas fa-tasks"></i> Application Process</div>
+                    <ol class="document-list">
+                        ${processList}
+                    </ol>
+                </div>
+            `;
+
+            addMessage(processHtml, false, true);
+
+            showSuggestions([
+                "Check eligibility",
+                "Calculate EMI",
+                "Show FAQs"
+            ]);
+        }
+
+        function showFAQs() {
+            if (!selectedLoanType) {
+                addMessage("Please select a loan type first to see FAQs.");
+                return;
+            }
+
+            const loanInfo = loanData[selectedLoanType];
+
+            let faqsHtml = '';
+            loanInfo.FAQs.forEach(faq => {
+                faqsHtml += `
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: var(--accent-color);">${faq.question}</div>
+                        <div>${faq.answer}</div>
+                    </div>
+                `;
+            });
+
+            const html = `
+                <div class="info-card">
+                    <div class="card-title"><i class="fas fa-question-circle"></i> Frequently Asked Questions</div>
+                    <div class="card-content">
+                        ${faqsHtml}
+                    </div>
+                </div>
+            `;
+
+            addMessage(html, false, true);
+
+            showSuggestions([
+                "Calculate EMI",
+                "Check eligibility",
+                "Back to loan types"
+            ]);
+        }
+
+        function startEMICalculator() {
+            currentStep = 10; // Special step for EMI calculator
+            addMessage("Let's calculate your EMI. Please enter the loan amount you're looking for (in ₹):");
+        }
+
+        function checkEligibility() {
+            const age = parseInt(userInfo.age);
+            const income = parseInt(userInfo.income);
+            isEligible = false;
+
+            switch (selectedLoanType) {
+                case 'Personal Loan':
+                    isEligible = age >= 21 && age <= 60 && income >= 25000;
+                    break;
+                case 'Education Loan':
+                    isEligible = age >= 16 && age <= 35;
+                    break;
+                case ' Farming Loan':
+                    isEligible = age >= 21 && age <= 65 && income >= 50000;
+                    break;
+                case 'Gold Loan':
+                    isEligible = age >= 18 && age <= 70;
+                    break;
+                case 'Home Loan':
+                    isEligible = age >= 21 && age <= 65 && income >= 25000;
+                    break;
+                case 'Vehicle Loan':
+                    isEligible = age >= 21 && age <= 60 && income >= 20000;
+                    break;
+            }
+
+            const loanInfo = loanData[selectedLoanType];
+
+            const typingIndicator = showTypingIndicator();
+
+            setTimeout(() => {
+                removeTypingIndicator(typingIndicator);
+
+                if (isEligible) {
+                    addFormattedMessage("Eligibility Result", `Based on the information you provided, you are potentially eligible for a ${selectedLoanType}!`, "success");
+
+                    // Show next steps
+                    const nextStepsHtml = `
+                        <div class="success-card">
+                            <div class="card-title"><i class="fas fa-arrow-right"></i> Next Steps</div>
+                            <ol class="document-list">
+                                <li>Prepare your documents</li>
+                                <li>Apply online or visit our nearest branch</li>
+                                <li>Complete verification process</li>
+                                <li>Receive loan approval</li>
+                            </ol>
+                        </div>
+                    `;
+
+                    addMessage(nextStepsHtml, false, true);
+
+                    // Recommend EMI calculator
+                    addMessage("Would you like to calculate your potential EMI for this loan?");
+
+                    showSuggestions([
+                        "Calculate EMI",
+                        "Show loan schemes",
+                        "Required documents"
+                    ]);
+                } else {
+                    addFormattedMessage("Eligibility Result", `Based on our assessment, you might not be eligible for ${selectedLoanType} at this time.`, "error");
+
+                    // Show requirements
+                    let eligibilityList = '';
+                    for (const [key, value] of Object.entries(loanInfo.Eligibility)) {
+                        eligibilityList += `<li><strong>${key}:</strong> ${value}</li>`;
+                    }
+
+                    const eligibilityHtml = `
+                        <div class="info-card">
+                            <div class="card-title"><i class="fas fa-info-circle"></i> Eligibility Requirements</div>
+                            <ul class="document-list">
+                                ${eligibilityList}
+                            </ul>
+                        </div>
+                    `;
+
+                    addMessage(eligibilityHtml, false, true);
+
+                    // Suggest alternatives
+                    addMessage("Would you like to explore other loan types that might be more suitable for your profile?");
+
+                    showSuggestions([
+                        "Show other loan types",
+                        "Try different criteria",
+                        "Help me improve eligibility"
+                    ]);
+                }
+
+                currentStep = 0;
+                loanTypesContainer.style.display = 'grid';
+            }, 2000);
+        }
+
+        function handleUserInput() {
+            const input = messageInput.value.trim();
+            if (!input) return;
+
+            addMessage(input, true);
+            messageInput.value = '';
+
+            // Show typing indicator
+            const typingIndicator = showTypingIndicator();
+
+            // Simulate typing delay
+            setTimeout(() => {
+                removeTypingIndicator(typingIndicator);
+
+                // Handle different conversation steps
+                switch (currentStep) {
+                    case 1: // Age input
+                        if (/^\d+$/.test(input)) {
+                            userInfo.age = parseInt(input);
+                            addMessage(`Thank you. Now, could you tell me your monthly income in rupees? (Just the amount, no need for ₹ symbol)`);
+                            currentStep = 2;
+                        } else {
+                            addMessage("I need your age as a number (e.g., 30). Could you please provide that?");
+                        }
+                        break;
+
+                    case 2: // Income input
+                        if (/^\d+$/.test(input.replace(/,/g, ""))) {
+                            userInfo.income = parseInt(input.replace(/,/g, ""));
+                            checkEligibility();
+                        } else {
+                            addMessage("I need your monthly income as a number (e.g., 50000). Could you please provide that?");
+                        }
+                        break;
+
+                    case 10: // EMI calculator - loan amount
+                        if (/^\d+$/.test(input.replace(/,/g, ""))) {
+                            userInfo.loanAmount = parseInt(input.replace(/,/g, ""));
+                            addMessage(`Great! For how many years would you like the loan? (1-30 years)`);
+                            currentStep = 11;
+                        } else {
+                            addMessage("Please enter a valid loan amount as a number (e.g., 500000).");
+                        }
+                        break;
+
+                    case 11: // EMI calculator - tenure
+                        if (/^\d+$/.test(input) && parseInt(input) >= 1 && parseInt(input) <= 30) {
+                            userInfo.tenure = parseInt(input);
+
+                            // Suggest interest rate based on loan type
+                            let suggestedRate = 10; // Default
+                            if (selectedLoanType) {
+                                const schemes = loanData[selectedLoanType].Schemes;
+                                const rateRanges = schemes.map(s => {
+                                    const rates = s.interest.match(/\d+\.?\d*/g);
+                                    return rates ? (parseFloat(rates[0]) + parseFloat(rates[rates.length - 1])) / 2 : 10;
+                                });
+                                suggestedRate = rateRanges.reduce((a, b) => a + b, 0) / rateRanges.length;
+                            }
+
+                            addMessage(`What interest rate would you like to calculate with? (You can use ${suggestedRate.toFixed(1)}% as an average rate for ${selectedLoanType || "loans"})`);
+                            currentStep = 12;
+                        } else {
+                            addMessage("Please enter a valid tenure between 1 and 30 years.");
+                        }
+                        break;
+
+                    case 12: // EMI calculator - interest rate
+                        const rate = parseFloat(input.replace(/[^0-9.]/g, ""));
+                        if (!isNaN(rate) && rate > 0 && rate < 50) {
+                            userInfo.interestRate = rate;
+                            addLoanCalculator(userInfo.loanAmount, userInfo.interestRate, userInfo.tenure);
+                            currentStep = 0;
+                        } else {
+                            addMessage("Please enter a valid interest rate (e.g., 8.5).");
+                        }
+                        break;
+
+                    default:
+                        // Handle natural language queries
+                        const query = input.toLowerCase();
+
+                        // Check for loan type selection
+                        for (const loanType in loanData) {
+                            if (query.includes(loanType.toLowerCase())) {
+                                selectedLoanType = loanType;
+                                selectLoanType(loanType);
+                                return;
+                            }
+                        }
+
+                        // Check for specific intents
+                        if (query.includes("eligib") || query.match(/\bqualify\b/)) {
+                            if (selectedLoanType) {
+                                startEligibilityCheck();
+                            } else {
+                                addMessage("I'd be happy to check your eligibility. Please select a loan type first.");
+                            }
+                        }
+                        else if (query.includes("emi") || query.includes("calculate") || query.includes("payment")) {
+                            startEMICalculator();
+                        }
+                        else if (query.includes("scheme") || query.includes("options") || query.includes("plans")) {
+                            showLoanSchemes();
+                        }
+                        else if (query.includes("process") || query.includes("apply") || query.includes("how to get")) {
+                            showApplicationProcess();
+                        }
+                        else if (query.includes("document") || query.includes("papers") || query.includes("need to submit")) {
+                            if (selectedLoanType) {
+                                addDocumentsList(loanData[selectedLoanType]["Documents Required"]);
+                            } else {
+                                addMessage("Please select a loan type first to see the required documents.");
+                            }
+                        }
+                        else if (query.includes("faq") || query.includes("question")) {
+                            showFAQs();
+                        }
+                        else if (query.includes("repayment schedule") || query.includes("payment schedule")) {
+                            if (calculatedEMI) {
+                                generateRepaymentSchedule(userInfo.loanAmount, userInfo.interestRate, userInfo.tenure);
+                            } else {
+                                addMessage("Let's calculate your EMI first to generate a repayment schedule.");
+                                startEMICalculator();
+                            }
+                        }
+                        else if (query.includes("back to loan") || query.includes("show loan types") || query.includes("other loan")) {
+                            loanTypesContainer.style.display = 'grid';
+                            addMessage("Here are all our loan types. Please select one to proceed:");
+                            selectedLoanType = null;
+                        }
+                        else if (query.includes("compare") || query.includes("difference between")) {
+                            addMessage("Here's a comparison of our different loan types:");
+                            const comparisonHtml = `
+                                <div class="info-card">
+                                    <div class="card-title"><i class="fas fa-exchange-alt"></i> Loan Comparison</div>
+                                    <div class="calculator-row" style="font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; margin-bottom: 5px;">
+                                        <div>Loan Type</div>
+                                        <div>Interest Rate</div>
+                                        <div>Max Tenure</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Personal Loan</div>
+                                        <div>9.5% - 14%</div>
+                                        <div>5 years</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Home Loan</div>
+                                        <div>6.5% - 9%</div>
+                                        <div>30 years</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Education Loan</div>
+                                        <div>8.5% - 12.5%</div>
+                                        <div>15 years</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Business Loan</div>
+                                        <div>11% - 18%</div>
+                                        <div>5 years</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Gold Loan</div>
+                                        <div>7.5% - 14%</div>
+                                        <div>3 years</div>
+                                    </div>
+                                    <div class="calculator-row">
+                                        <div>Vehicle Loan</div>
+                                        <div>7% - 13%</div>
+                                        <div>7 years</div>
+                                    </div>
+                                </div>
+                            `;
+                            addMessage(comparisonHtml, false, true);
+                        }
+                        else if (query.includes("hello") || query.includes("hi ") || query.includes("hey")) {
+                            addMessage("Hello! I'm your loan assistant. How can I help you today with your loan requirements?");
+                            showSuggestions([
+                                "Tell me about loans",
+                                "Calculate EMI",
+                                "Check eligibility"
+                            ]);
+                        }
+                        else if (query.includes("thank")) {
+                            addMessage("You're welcome! Is there anything else I can help you with?");
+                            showSuggestions([
+                                "No, that's all",
+                                "Calculate another EMI",
+                                "Check eligibility"
+                            ]);
+                        }
+                        else if (query.includes("bye") || query.includes("goodbye") || query.includes("that's all")) {
+                            addMessage("Thank you for using our Loan Assistant. Have a great day! Feel free to come back anytime you need loan information or assistance.");
+                        }
+                        else {
+                            addMessage("I'm not sure I understand. Would you like to check loan eligibility, calculate EMI, or learn more about our loan options?");
+                            showSuggestions([
+                                "Check eligibility",
+                                "Calculate EMI",
+                                "Loan information"
+                            ]);
+                        }
+                }
+            }, 1000);
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.loan-type-card').forEach(card => {
+            card.addEventListener('click', () => selectLoanType(card.dataset.type));
+        });
+
+        sendBtn.addEventListener('click', handleUserInput);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserInput();
+        });
+
+        // Set online status
+        setInterval(() => {
+            if (statusElement.textContent === "Online") {
+                statusElement.textContent = "Online";
+            }
+        }, 120000);
+    </script>
+</body>
+
+</html>
